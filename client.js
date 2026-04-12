@@ -9,50 +9,39 @@ const STELLAR_SECRET = process.env.STELLAR_SECRET;
 const SERVER_URL = process.env.SERVER_URL || "http://localhost:3001";
 
 if (!STELLAR_SECRET) {
-  console.error("❌ Defina STELLAR_SECRET no arquivo .env (sua chave secreta S...)");
+  console.error("❌ Defina STELLAR_SECRET no arquivo .env");
   process.exit(1);
 }
 
 const keypair = Keypair.fromSecret(STELLAR_SECRET);
-console.log(`\n🔑 Usando conta Stellar: ${keypair.publicKey()}`);
+console.log(`\n🔑 Conta Stellar: ${keypair.publicKey()}`);
 console.log(`🌐 Servidor: ${SERVER_URL}\n`);
 
-// Configura o MPP client - ele intercepta automaticamente respostas 402
-// e faz o pagamento na blockchain Stellar
 Mppx.create({
   methods: [
     stellar.charge({
       keypair,
-      mode: "pull", // o servidor faz o broadcast da transação
+      mode: "pull",
       onProgress(event) {
-        if (event.type === "challenge") {
-          console.log(`💳 Pagamento solicitado: ${event.amount} USDC para ${event.recipient.slice(0, 8)}...`);
-        } else if (event.type === "signing") {
-          console.log(`✍️  Assinando transação...`);
-        } else if (event.type === "signed") {
-          console.log(`✅ Transação assinada!`);
-        }
+        if (event.type === "challenge")
+          console.log(`💳 Pagamento: ${event.amount} USDC`);
+        if (event.type === "signing") console.log(`✍️  Assinando...`);
+        if (event.type === "signed") console.log(`✅ Assinado!`);
       },
     }),
   ],
 });
 
-// Função para chamar uma ferramenta
 async function callTool(name, endpoint, params = "") {
   console.log(`\n${"=".repeat(50)}`);
-  console.log(`🔧 Chamando ferramenta: ${name}`);
+  console.log(`🔧 ${name}`);
   console.log(`${"=".repeat(50)}`);
-
   try {
     const url = `${SERVER_URL}${endpoint}${params ? "?" + params : ""}`;
-    console.log(`📡 URL: ${url}`);
-
     const response = await fetch(url);
     const data = await response.json();
-
     console.log(`📦 Status: ${response.status}`);
     console.log(`📄 Resposta:`, JSON.stringify(data, null, 2));
-
     return data;
   } catch (error) {
     console.error(`❌ Erro: ${error.message}`);
@@ -60,43 +49,35 @@ async function callTool(name, endpoint, params = "") {
   }
 }
 
-// Testa todas as ferramentas
 async function main() {
-  console.log("🚀 StellarAgentTools - Cliente de teste\n");
+  console.log("🚀 StellarAgentTools v2.0 - Teste com dados REAIS\n");
 
-  // 1. Lista ferramentas disponíveis (grátis)
-  console.log("📋 Buscando ferramentas disponíveis...");
-  const toolsResponse = await fetch(`${SERVER_URL}/tools`);
-  const tools = await toolsResponse.json();
-  console.log(`✅ ${tools.tools.length} ferramentas encontradas:\n`);
-  for (const tool of tools.tools) {
-    console.log(`   • ${tool.name} - ${tool.description} (${tool.price})`);
+  // Lista ferramentas
+  const toolsRes = await fetch(`${SERVER_URL}/tools`);
+  const tools = await toolsRes.json();
+  console.log(`✅ ${tools.tools.length} ferramentas (todas com dados reais):\n`);
+  for (const t of tools.tools) {
+    console.log(`   • ${t.name} — ${t.description} (${t.price}) [${t.source}]`);
   }
 
-  // 2. Chama AI Q&A (0.01 USDC)
-  await callTool(
-    "AI Q&A",
-    "/tools/ai-answer",
-    "q=O que é o protocolo MPP da Stellar?"
-  );
+  // 1. Crypto Price — REAL
+  await callTool("Crypto Price (CoinGecko)", "/tools/crypto-price", "symbol=xlm");
 
-  // 3. Chama Crypto Price (0.005 USDC)
-  await callTool(
-    "Crypto Price",
-    "/tools/crypto-price",
-    "symbol=XLM"
-  );
+  // 2. Wikipedia Summary — REAL
+  await callTool("Wikipedia Summary", "/tools/wiki-summary", "topic=Stellar_(payment_network)&lang=en");
 
-  // 4. Chama Web Summary (0.01 USDC)
-  await callTool(
-    "Web Summary",
-    "/tools/web-summary",
-    "url=https://stellar.org"
-  );
+  // 3. Country Info — REAL
+  await callTool("Country Info", "/tools/country-info", "name=Brazil");
+
+  // 4. Random Joke — REAL
+  await callTool("Random Joke", "/tools/random-joke", "lang=en");
+
+  // 5. Dad Joke — REAL
+  await callTool("Dad Joke", "/tools/dad-joke");
 
   console.log(`\n${"=".repeat(50)}`);
-  console.log("✅ Todos os testes concluídos!");
-  console.log(`💸 Total gasto: ~0.025 USDC`);
+  console.log("✅ Todos os testes com dados REAIS concluídos!");
+  console.log(`💸 Total gasto: ~0.022 USDC`);
   console.log(`${"=".repeat(50)}\n`);
 }
 
