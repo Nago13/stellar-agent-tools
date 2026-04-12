@@ -75,9 +75,18 @@ async function main() {
   // 5. Dad Joke — REAL
   await callTool("Dad Joke", "/tools/dad-joke");
 
+  // 6. Weather — REAL
+  await callTool("Weather", "/tools/weather", "city=São Paulo&lat=-23.55&lon=-46.63");
+
+  // 7. Exchange Rate — REAL
+  await callTool("Exchange Rate", "/tools/exchange-rate", "from=USD&to=BRL");
+
+  // 8. Generate Image — REAL
+  await callTool("Generate Image", "/tools/generate-image", "prompt=A cute astronaut cat floating in space with Stellar logo");
+
   console.log(`\n${"=".repeat(50)}`);
   console.log("✅ Todos os testes com dados REAIS concluídos!");
-  console.log(`💸 Total gasto: ~0.022 USDC`);
+  console.log(`💸 Total gasto: ~0.097 USDC`);
   console.log(`${"=".repeat(50)}\n`);
 }
 

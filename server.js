@@ -1,4 +1,5 @@
 import express from "express";
+import { GoogleGenAI } from "@google/genai";
 import { Mppx } from "mppx/server";
 import { stellar } from "@stellar/mpp/charge/server";
 import { USDC_SAC_TESTNET } from "@stellar/mpp";
@@ -304,6 +305,173 @@ app.get("/tools/country-info", async (req, res) => {
   }
 });
 
+// ===== FERRAMENTA 6: Weather (Open-Meteo API - REAL) =====
+app.get("/tools/weather", async (req, res) => {
+  const webReq = toWebRequest(req);
+  const result = await mppx.charge({
+    amount: "0.005",
+    description: "Weather - Clima em tempo real via Open-Meteo",
+  })(webReq);
+
+  if (result.status === 402) {
+    const challenge = result.challenge;
+    challenge.headers.forEach((value, key) => res.setHeader(key, value));
+    return res.status(402).send(await challenge.text());
+  }
+
+  const lat = req.query.lat || "-23.55";
+  const lon = req.query.lon || "-46.63";
+  const city = req.query.city || "São Paulo";
+
+  try {
+    const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&timezone=auto`;
+    const apiRes = await fetch(apiUrl);
+    const data = await apiRes.json();
+
+    const weatherCodes = {
+      0: "Céu limpo", 1: "Parcialmente limpo", 2: "Parcialmente nublado",
+      3: "Nublado", 45: "Neblina", 51: "Garoa leve", 61: "Chuva leve",
+      63: "Chuva moderada", 65: "Chuva forte", 80: "Pancadas de chuva",
+      95: "Tempestade",
+    };
+
+    const current = data.current;
+    const response = result.withReceipt(
+      Response.json({
+        city,
+        temperature: `${current.temperature_2m}°C`,
+        humidity: `${current.relative_humidity_2m}%`,
+        windSpeed: `${current.wind_speed_10m} km/h`,
+        condition: weatherCodes[current.weather_code] || `Code ${current.weather_code}`,
+        timestamp: current.time,
+        source: "Open-Meteo API (real data)",
+        cost: "0.005 USDC",
+      })
+    );
+    response.headers.forEach((value, key) => res.setHeader(key, value));
+    return res.status(response.status).send(await response.text());
+  } catch (error) {
+    const response = result.withReceipt(
+      Response.json({ error: error.message })
+    );
+    response.headers.forEach((value, key) => res.setHeader(key, value));
+    return res.status(response.status).send(await response.text());
+  }
+});
+
+// ===== FERRAMENTA 7: Exchange Rate (ExchangeRate API - REAL) =====
+app.get("/tools/exchange-rate", async (req, res) => {
+  const webReq = toWebRequest(req);
+  const result = await mppx.charge({
+    amount: "0.003",
+    description: "Exchange Rate - Câmbio em tempo real",
+  })(webReq);
+
+  if (result.status === 402) {
+    const challenge = result.challenge;
+    challenge.headers.forEach((value, key) => res.setHeader(key, value));
+    return res.status(402).send(await challenge.text());
+  }
+
+  const from = (req.query.from || "USD").toUpperCase();
+  const to = (req.query.to || "BRL").toUpperCase();
+
+  try {
+    const apiUrl = `https://open.er-api.com/v6/latest/${from}`;
+    const apiRes = await fetch(apiUrl);
+    const data = await apiRes.json();
+
+    const rate = data.rates?.[to];
+    if (!rate) {
+      const response = result.withReceipt(
+        Response.json({ error: `Moeda ${to} não encontrada`, from, to })
+      );
+      response.headers.forEach((value, key) => res.setHeader(key, value));
+      return res.status(response.status).send(await response.text());
+    }
+
+    const response = result.withReceipt(
+      Response.json({
+        from,
+        to,
+        rate,
+        example: `1 ${from} = ${rate.toFixed(4)} ${to}`,
+        lastUpdate: data.time_last_update_utc,
+        source: "ExchangeRate API (real data)",
+        cost: "0.003 USDC",
+      })
+    );
+    response.headers.forEach((value, key) => res.setHeader(key, value));
+    return res.status(response.status).send(await response.text());
+  } catch (error) {
+    const response = result.withReceipt(
+      Response.json({ error: error.message })
+    );
+    response.headers.forEach((value, key) => res.setHeader(key, value));
+    return res.status(response.status).send(await response.text());
+  }
+});
+
+// ===== FERRAMENTA 8: Image Generation (Nano Banana / Gemini - REAL) =====
+app.get("/tools/generate-image", async (req, res) => {
+  const webReq = toWebRequest(req);
+  const result = await mppx.charge({
+    amount: "0.05",
+    description: "Image Generation - Geração de imagem via Nano Banana (Google Gemini)",
+  })(webReq);
+
+  if (result.status === 402) {
+    const challenge = result.challenge;
+    challenge.headers.forEach((value, key) => res.setHeader(key, value));
+    return res.status(402).send(await challenge.text());
+  }
+
+  const prompt = req.query.prompt || "A futuristic city on the Stellar blockchain";
+
+  try {
+    const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_AI_KEY });
+
+    const response_ai = await ai.models.generateContent({
+      model: "gemini-3.1-flash-image-preview",
+      contents: prompt,
+      config: {
+        responseModalities: ["TEXT", "IMAGE"],
+      },
+    });
+
+    let imageBase64 = null;
+    let textResponse = null;
+
+    for (const part of response_ai.candidates[0].content.parts) {
+      if (part.text) {
+        textResponse = part.text;
+      } else if (part.inlineData) {
+        imageBase64 = part.inlineData.data;
+      }
+    }
+
+    const response = result.withReceipt(
+      Response.json({
+        prompt,
+        hasImage: !!imageBase64,
+        imageBase64: imageBase64 ? `data:image/png;base64,${imageBase64}` : null,
+        textResponse: textResponse || null,
+        model: "Nano Banana (Gemini)",
+        source: "Google Gemini API (real data)",
+        cost: "0.05 USDC",
+      })
+    );
+    response.headers.forEach((value, key) => res.setHeader(key, value));
+    return res.status(response.status).send(await response.text());
+  } catch (error) {
+    const response = result.withReceipt(
+      Response.json({ error: error.message, prompt })
+    );
+    response.headers.forEach((value, key) => res.setHeader(key, value));
+    return res.status(response.status).send(await response.text());
+  }
+});
+
 // ===== Lista todas as ferramentas =====
 app.get("/tools", (req, res) => {
   res.json({
@@ -358,6 +526,33 @@ app.get("/tools", (req, res) => {
         source: "icanhazdadjoke.com",
         dataType: "REAL",
       },
+      {
+        name: "weather",
+        endpoint: "/tools/weather",
+        description: "Clima em tempo real de qualquer lugar do mundo",
+        price: "0.005 USDC",
+        params: { lat: "latitude", lon: "longitude", city: "nome da cidade" },
+        source: "Open-Meteo API",
+        dataType: "REAL",
+      },
+      {
+        name: "exchange-rate",
+        endpoint: "/tools/exchange-rate",
+        description: "Câmbio de moedas em tempo real",
+        price: "0.003 USDC",
+        params: { from: "USD, EUR, BRL...", to: "BRL, USD, EUR..." },
+        source: "ExchangeRate API",
+        dataType: "REAL",
+      },
+      {
+        name: "generate-image",
+        endpoint: "/tools/generate-image",
+        description: "Geração de imagens com IA via Nano Banana (Google Gemini)",
+        price: "0.05 USDC",
+        params: { prompt: "descrição da imagem em inglês" },
+        source: "Google Gemini API (Nano Banana)",
+        dataType: "REAL",
+      },
     ],
   });
 });
@@ -385,10 +580,12 @@ app.listen(PORT, () => {
   console.log(`📋 Ferramentas: http://localhost:${PORT}/tools`);
   console.log(`💰 Recebendo em: ${RECIPIENT.slice(0, 8)}...`);
   console.log(`🔗 Rede: Stellar Testnet | Moeda: USDC`);
-  console.log(`\n📡 5 ferramentas com dados REAIS:`);
-  console.log(`   • crypto-price  → CoinGecko API`);
-  console.log(`   • wiki-summary  → Wikipedia API`);
-  console.log(`   • country-info  → RestCountries API`);
-  console.log(`   • random-joke   → JokeAPI v2`);
-  console.log(`   • dad-joke      → icanhazdadjoke\n`);
+  console.log(`\n📡 7 ferramentas com dados REAIS:`);
+  console.log(`   • crypto-price   → CoinGecko API`);
+  console.log(`   • wiki-summary   → Wikipedia API`);
+  console.log(`   • country-info   → RestCountries API`);
+  console.log(`   • random-joke    → JokeAPI v2`);
+  console.log(`   • dad-joke       → icanhazdadjoke`);
+  console.log(`   • weather        → Open-Meteo API`);
+  console.log(`   • exchange-rate  → ExchangeRate API\n`);
 });

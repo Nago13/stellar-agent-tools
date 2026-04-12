@@ -241,9 +241,11 @@ header {
   height: 3px;
 }
 
-.tool-card:nth-child(1)::before { background: var(--purple); }
-.tool-card:nth-child(2)::before { background: var(--amber); }
-.tool-card:nth-child(3)::before { background: var(--coral); }
+.tool-card:nth-child(1)::before { background: var(--amber); }
+.tool-card:nth-child(2)::before { background: var(--purple); }
+.tool-card:nth-child(3)::before { background: var(--blue); }
+.tool-card:nth-child(4)::before { background: var(--coral); }
+.tool-card:nth-child(5)::before { background: var(--accent); }
 
 .tool-icon {
   width: 44px;
@@ -256,9 +258,11 @@ header {
   margin-bottom: 16px;
 }
 
-.tool-card:nth-child(1) .tool-icon { background: rgba(139,124,246,0.15); }
-.tool-card:nth-child(2) .tool-icon { background: rgba(239,176,46,0.15); }
-.tool-card:nth-child(3) .tool-icon { background: rgba(240,153,123,0.15); }
+.tool-card:nth-child(1) .tool-icon { background: rgba(239,176,46,0.15); }
+.tool-card:nth-child(2) .tool-icon { background: rgba(139,124,246,0.15); }
+.tool-card:nth-child(3) .tool-icon { background: rgba(91,155,245,0.15); }
+.tool-card:nth-child(4) .tool-icon { background: rgba(240,153,123,0.15); }
+.tool-card:nth-child(5) .tool-icon { background: rgba(0,212,170,0.15); }
 
 .tool-name {
   font-size: 16px;
@@ -351,6 +355,8 @@ header {
 .tx-dot.purple { background: var(--purple); }
 .tx-dot.amber { background: var(--amber); }
 .tx-dot.coral { background: var(--coral); }
+.tx-dot.blue { background: var(--blue); }
+.tx-dot.green { background: var(--accent); }
 
 .tx-amount {
   font-family: var(--mono);
@@ -495,6 +501,10 @@ footer a:hover { text-decoration: underline; }
 .try-result.show { display: block; }
 
 /* Responsive */
+@media (max-width: 900px) {
+  .tools-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
 @media (max-width: 768px) {
   .stats-bar { grid-template-columns: repeat(2, 1fr); }
   .tools-grid { grid-template-columns: 1fr; }
@@ -593,33 +603,53 @@ footer a:hover { text-decoration: underline; }
     <h2 class="section-title">Ferramentas disponíveis</h2>
     <div class="tools-grid" id="tools-grid">
 
-      <div class="tool-card" onclick="tryTool('ai-answer', 'q=What is Stellar?')">
-        <div class="tool-icon">&#x1F9E0;</div>
-        <div class="tool-name">AI Q&A</div>
-        <div class="tool-desc">Responde perguntas usando inteligência artificial. Em produção, conectado a um LLM real.</div>
-        <div class="tool-meta">
-          <div class="tool-price">0.01 USDC</div>
-          <div class="tool-tag">MPP charge</div>
-        </div>
-      </div>
-
-      <div class="tool-card" onclick="tryTool('crypto-price', 'symbol=XLM')">
+      <div class="tool-card" onclick="tryTool('crypto-price', 'symbol=xlm')">
         <div class="tool-icon">&#x1F4B0;</div>
         <div class="tool-name">Crypto Price</div>
-        <div class="tool-desc">Retorna preços de criptomoedas em tempo real. Suporta XLM, BTC, ETH, USDC.</div>
+        <div class="tool-desc">Preços reais de criptomoedas via CoinGecko. Suporta XLM, BTC, ETH, SOL, USDC.</div>
         <div class="tool-meta">
           <div class="tool-price">0.005 USDC</div>
-          <div class="tool-tag">MPP charge</div>
+          <div class="tool-tag">CoinGecko API</div>
         </div>
       </div>
 
-      <div class="tool-card" onclick="tryTool('web-summary', 'url=https://stellar.org')">
-        <div class="tool-icon">&#x1F310;</div>
-        <div class="tool-name">Web Summary</div>
-        <div class="tool-desc">Gera resumos inteligentes de qualquer página web usando IA generativa.</div>
+      <div class="tool-card" onclick="tryTool('wiki-summary', 'topic=Stellar_(payment_network)&lang=en')">
+        <div class="tool-icon">&#x1F4D6;</div>
+        <div class="tool-name">Wikipedia Summary</div>
+        <div class="tool-desc">Resumos reais de artigos da Wikipedia em qualquer idioma (en, pt, es...).</div>
         <div class="tool-meta">
           <div class="tool-price">0.01 USDC</div>
-          <div class="tool-tag">MPP charge</div>
+          <div class="tool-tag">Wikipedia API</div>
+        </div>
+      </div>
+
+      <div class="tool-card" onclick="tryTool('country-info', 'name=Brazil')">
+        <div class="tool-icon">&#x1F30D;</div>
+        <div class="tool-name">Country Info</div>
+        <div class="tool-desc">Dados completos de qualquer país: capital, população, moeda, idiomas e bandeira.</div>
+        <div class="tool-meta">
+          <div class="tool-price">0.005 USDC</div>
+          <div class="tool-tag">RestCountries API</div>
+        </div>
+      </div>
+
+      <div class="tool-card" onclick="tryTool('random-joke', 'lang=en')">
+        <div class="tool-icon">&#x1F602;</div>
+        <div class="tool-name">Random Joke</div>
+        <div class="tool-desc">Piadas aleatórias em vários idiomas via JokeAPI. Suporta en, pt, de, es, fr.</div>
+        <div class="tool-meta">
+          <div class="tool-price">0.001 USDC</div>
+          <div class="tool-tag">JokeAPI v2</div>
+        </div>
+      </div>
+
+      <div class="tool-card" onclick="tryTool('dad-joke', '')">
+        <div class="tool-icon">&#x1F9D4;</div>
+        <div class="tool-name">Dad Joke</div>
+        <div class="tool-desc">Piadas de pai (dad jokes) aleatórias ou por tema, via icanhazdadjoke.com.</div>
+        <div class="tool-meta">
+          <div class="tool-price">0.001 USDC</div>
+          <div class="tool-tag">icanhazdadjoke</div>
         </div>
       </div>
 
@@ -683,7 +713,13 @@ function addTx(tool, amount, status) {
   txCount++;
   const now = new Date();
   const time = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  const colors = { 'AI Q&A': 'purple', 'Crypto Price': 'amber', 'Web Summary': 'coral' };
+  const colors = {
+    'Crypto Price': 'amber',
+    'Wiki Summary': 'purple',
+    'Country Info': 'blue',
+    'Random Joke': 'coral',
+    'Dad Joke': 'green',
+  };
   const fakeHash = 'tx_' + Math.random().toString(36).substring(2, 10);
 
   const row = document.createElement('div');
@@ -713,8 +749,20 @@ async function tryTool(tool, params) {
     const data = await r.text();
 
     if (status === 402) {
-      const toolNames = { 'ai-answer': 'AI Q&A', 'crypto-price': 'Crypto Price', 'web-summary': 'Web Summary' };
-      const amounts = { 'ai-answer': '0.01', 'crypto-price': '0.005', 'web-summary': '0.01' };
+      const toolNames = {
+        'crypto-price': 'Crypto Price',
+        'wiki-summary': 'Wiki Summary',
+        'country-info': 'Country Info',
+        'random-joke': 'Random Joke',
+        'dad-joke': 'Dad Joke',
+      };
+      const amounts = {
+        'crypto-price': '0.005',
+        'wiki-summary': '0.01',
+        'country-info': '0.005',
+        'random-joke': '0.001',
+        'dad-joke': '0.001',
+      };
 
       result.textContent += `HTTP ${status} — Payment Required\n\n`;
       result.textContent += `The server is asking for ${amounts[tool]} USDC to proceed.\n`;
@@ -739,9 +787,11 @@ setInterval(checkStatus, 10000);
 
 // Add some initial demo transactions
 setTimeout(() => {
-  addTx('AI Q&A', '0.01', 'confirmed');
-  setTimeout(() => addTx('Crypto Price', '0.005', 'confirmed'), 400);
-  setTimeout(() => addTx('Web Summary', '0.01', 'confirmed'), 800);
+  addTx('Dad Joke', '0.001', 'confirmed');
+  setTimeout(() => addTx('Random Joke', '0.001', 'confirmed'), 400);
+  setTimeout(() => addTx('Country Info', '0.005', 'confirmed'), 800);
+  setTimeout(() => addTx('Wiki Summary', '0.01', 'confirmed'), 1200);
+  setTimeout(() => addTx('Crypto Price', '0.005', 'confirmed'), 1600);
 }, 500);
 </script>
 
