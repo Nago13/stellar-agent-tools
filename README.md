@@ -79,7 +79,7 @@ STELLAR_SECRET=S...         # Agent wallet secret (Payer)
 MPP_SECRET_KEY=strong-mpp-secret-abc
 GOOGLE_AI_KEY=AIza...       # Google Gemini API Key
 PORT=3001
-SERVER_URL=http://localhost:3001
+SERVER_URL=http://localhost:3000
 ```
 
 ### 3. Fund your agent wallet

@@ -39,10 +39,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark bg-background">
       <body className="font-sans antialiased bg-background">
-        {process.env.NODE_ENV === 'development' && <BannerClosable />}
+        <BannerClosable/>
         {children}
         <Toaster />
-        {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
   )

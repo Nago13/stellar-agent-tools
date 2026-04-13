@@ -195,7 +195,7 @@ const tools: Tool[] = [
     maxDur: "—",
     capabilities: ["text-to-image", "Gemini (Nano Banana)"],
     description: "Fast image generation (Nano Banana / Gemini) via local MPP-paid endpoint.",
-    prompt: `POST http://localhost:3001/tools/generate-image
+    prompt: `POST http://localhost:3000/tools/generate-image
 Headers: Content-Type: application/json
 Body: { "prompt": "A futuristic city on the Stellar blockchain at sunset, neon lights, drones, wide angle" }
 Payment: MPP x402 handled by agent wallet (0.05 USDC per image). Use the agent wallet flow to pay and retry.`,
@@ -212,7 +212,7 @@ Payment: MPP x402 handled by agent wallet (0.05 USDC per image). Use the agent w
     maxDur: "—",
     capabilities: ["real-time price", "24h change", "market cap"],
     description: "Real crypto prices via CoinGecko (paid with MPP).",
-    prompt: `GET http://localhost:3001/tools/crypto-price?symbol=xlm
+    prompt: `GET http://localhost:3000/tools/crypto-price?symbol=xlm
 Payment: MPP x402 handled by agent wallet (0.005 USDC per call).`,
     outputExample: "{ symbol: \"XLM\", price: 0.12, change24h: \"-0.25%\" }",
   },
@@ -227,7 +227,7 @@ Payment: MPP x402 handled by agent wallet (0.005 USDC per call).`,
     maxDur: "—",
     capabilities: ["summary", "multilingual"],
     description: "Wikipedia article summaries with links and thumbnails.",
-    prompt: `GET http://localhost:3001/tools/wiki-summary?topic=Stellar_(payment_network)&lang=en
+    prompt: `GET http://localhost:3000/tools/wiki-summary?topic=Stellar_(payment_network)&lang=en
 Payment: MPP x402 handled by agent wallet (0.01 USDC per call).`,
     outputExample: "{ title: \"Stellar\", summary: \"...\" }",
   },
@@ -242,7 +242,7 @@ Payment: MPP x402 handled by agent wallet (0.01 USDC per call).`,
     maxDur: "—",
     capabilities: ["country metadata", "flags", "currencies", "languages"],
     description: "RestCountries data: capital, population, currency, languages, flag.",
-    prompt: `GET http://localhost:3001/tools/country-info?name=Brazil
+    prompt: `GET http://localhost:3000/tools/country-info?name=Brazil
 Payment: MPP x402 handled by agent wallet (0.005 USDC per call).`,
     outputExample: "{ capital: \"Brasília\", flag: \"https://...png\" }",
   },
@@ -257,7 +257,7 @@ Payment: MPP x402 handled by agent wallet (0.005 USDC per call).`,
     maxDur: "—",
     capabilities: ["jokes", "multi-language"],
     description: "Random JokeAPI v2 with language selection.",
-    prompt: `GET http://localhost:3001/tools/random-joke?lang=en
+    prompt: `GET http://localhost:3000/tools/random-joke?lang=en
 Payment: MPP x402 handled by agent wallet (0.001 USDC per call).`,
     outputExample: "{ joke: \"...\" }",
   },
@@ -272,7 +272,7 @@ Payment: MPP x402 handled by agent wallet (0.001 USDC per call).`,
     maxDur: "—",
     capabilities: ["dad jokes", "search term"],
     description: "icanhazdadjoke with optional search term.",
-    prompt: `GET http://localhost:3001/tools/dad-joke?search=computer
+    prompt: `GET http://localhost:3000/tools/dad-joke?search=computer
 Payment: MPP x402 handled by agent wallet (0.001 USDC per call).`,
     outputExample: "{ joke: \"...\" }",
   },
@@ -287,7 +287,7 @@ Payment: MPP x402 handled by agent wallet (0.001 USDC per call).`,
     maxDur: "—",
     capabilities: ["current weather", "temperature", "humidity", "wind"],
     description: "Open-Meteo real-time weather for any coordinates/city.",
-    prompt: `GET http://localhost:3001/tools/weather?city=Sao%20Paulo&lat=-23.55&lon=-46.63
+    prompt: `GET http://localhost:3000/tools/weather?city=Sao%20Paulo&lat=-23.55&lon=-46.63
 Payment: MPP x402 handled by agent wallet (0.005 USDC per call).`,
     outputExample: "{ temperature: \"25°C\", condition: \"Clear\" }",
   },
@@ -302,7 +302,7 @@ Payment: MPP x402 handled by agent wallet (0.005 USDC per call).`,
     maxDur: "—",
     capabilities: ["FX rate", "timestamp"],
     description: "ExchangeRate API live FX (e.g., USD→BRL).",
-    prompt: `GET http://localhost:3001/tools/exchange-rate?from=USD&to=BRL
+    prompt: `GET http://localhost:3000/tools/exchange-rate?from=USD&to=BRL
 Payment: MPP x402 handled by agent wallet (0.003 USDC per call).`,
     outputExample: "{ rate: 5.12, example: \"1 USD = 5.12 BRL\" }",
   },

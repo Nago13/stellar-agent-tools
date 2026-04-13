@@ -23,7 +23,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const STELLAR_SECRET = process.env.STELLAR_SECRET;
-const SERVER_URL = process.env.SERVER_URL || "http://localhost:3001";
+const SERVER_URL = process.env.SERVER_URL || "http://localhost:3000";
 
 if (!STELLAR_SECRET) {
   console.error("ERROR: STELLAR_SECRET not set in .env");

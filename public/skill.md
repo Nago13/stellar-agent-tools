@@ -2,7 +2,7 @@
 name: stellar-mpp-agent
 version: 0.1.0
 description: Unified skill for agent wallets and MPP-priced MCP tools on Stellar Testnet USDC.
-homepage: https://localhost:3000
+homepage: https://lumina-stellar.vercel.app
 metadata: {"mpp":{"supported":true,"networks":["stellar:testnet"],"tokens":["USDC_SAC_TESTNET"],"endpoint":"/tools/mpp-pay"},"x402":{"supported":false}}
 ---
 
@@ -14,7 +14,7 @@ Server-managed wallets for AI agents on Stellar Testnet USDC, plus paid MCP tool
 
 ## TL;DR — Quick reference
 
-- Skill file: `https://localhost:3000/skill.md`
+- Skill file: `https://lumina-stellar.vercel.app/skill.md`
 - Wallet generator: `node skills/stellar-agent-tools/scripts/create-wallet.js --friendbot`
 - Fund USDC: https://faucet.circle.com (choose Stellar Testnet) or transfer from another funded account.
 - `.env`: `STELLAR_SECRET` (payer), `STELLAR_RECIPIENT` (receiver), `MPP_SECRET_KEY`, `PORT` (optional, defaults 3001), `SERVER_URL` (for client tests).
@@ -30,8 +30,8 @@ The server uses MPP via `@stellar/mpp` and `mppx`. Call any tool endpoint; if it
 
 Example (image generation):
 ```
-Skill: https://localhost:3000/skill.md
-Endpoint: GET http://localhost:3001/tools/generate-image
+Skill: https://lumina-stellar.vercel.app/skill.md
+Endpoint: GET http://localhost:3000/tools/generate-image
 Model: Nano Banana (Gemini 3.1 flash image preview)
 Price: 0.05 USDC per image
 
