@@ -1,0 +1,8 @@
+interface:
+  display_name: "Stellar MPP Agent"
+  short_description: "Create a Stellar agent wallet and run paid MCP tools via MPP"
+  brand_color: "#0D61F2"
+  default_prompt: "Use $stellar-mpp-agent to spin up a Stellar testnet wallet and run/pay MPP-priced MCP tools (image gen, price feeds, summaries)."
+
+policy:
+  allow_implicit_invocation: true
