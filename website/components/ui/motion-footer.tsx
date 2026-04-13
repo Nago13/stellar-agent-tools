@@ -409,7 +409,7 @@ export function CinematicFooter() {
                   <p className="text-muted-foreground text-sm leading-relaxed font-mono">
                     Copy{" "}
                     <span className="text-foreground/70 bg-white/5 px-1.5 py-0.5 rounded-md border border-white/10 text-xs">
-                      Read lumina/skill.md
+                      Read http://localhost:3000/skill.md and return a list of the available tools.
                     </span>{" "}
                     to list tools without leaving the page.
                   </p>
