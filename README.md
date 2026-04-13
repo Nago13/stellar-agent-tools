@@ -1,69 +1,76 @@
 # 🚀 StellarAgentTools
 
-**Marketplace de ferramentas pagas para agentes de IA via MPP na Stellar**
+Paid tool marketplace for AI agents using the Stellar Machine Payments Protocol (MPP).
 
 Built for [Stellar Hacks: Agents 2026](https://dorahacks.io/hackathon/stellar-agents-x402-stripe-mpp)
 
 ---
 
-## 🎯 O que é?
+## 🎯 What is this?
 
-StellarAgentTools é uma infraestrutura open-source que permite que **agentes de IA** (como Claude Desktop, Cursor, Claude Code) **descubram e paguem por ferramentas automaticamente**, usando o **Machine Payments Protocol (MPP)** na blockchain **Stellar**.
+StellarAgentTools is an open-source infrastructure that lets AI agents (Claude Desktop, Cursor, Claude Code, etc.) automatically discover and pay for tools using the **Machine Payments Protocol (MPP)** on the **Stellar** blockchain.
 
-Inspirado no [MCPay](https://github.com/microchipgnu/MCPay) e [Frames.ag](https://frames.ag), o StellarAgentTools traz esse conceito para o ecossistema Stellar, aproveitando:
+- ~5s finality
+- ~$0.00001 fees per transaction
+- Native USDC via Soroban SAC (Stellar Asset Contract)
+- Official machine-to-machine payments with MPP
 
-- **Transações ultrarrápidas** (~5 segundos de finalidade)
-- **Taxas quase zero** (~$0.00001 por transação)
-- **USDC nativo** via Soroban SAC (Stellar Asset Contract)
-- **MPP Protocol** — o protocolo de pagamento machine-to-machine oficial da Stellar
-
-## 🏗️ Arquitetura
+## 🏗️ Architecture
 ┌─────────────────────────────────────────────┐
-│          AGENTES DE IA (Clientes)           │
+│           AI AGENTS (Clients)               │
 │  Claude Desktop · Cursor · Claude Code      │
 └──────────────────┬──────────────────────────┘
                    │ MCP Protocol
                    ▼
 ┌─────────────────────────────────────────────┐
-│         MCP SERVER (Descoberta)             │
-│  Lista ferramentas · Preços · Descrições    │
+│          MCP SERVER (Discovery)             │
+│  Lists tools · Prices · Descriptions        │
 └──────────────────┬──────────────────────────┘
                    │ HTTP + MPP
                    ▼
 ┌─────────────────────────────────────────────┐
-│      PAYMENT LAYER (MPP Charge)             │
-│  HTTP 402 → Pagamento USDC → Retry → 200   │
+│        PAYMENT LAYER (MPP Charge)           │
+│  HTTP 402 → USDC payment → Retry → 200      │
 └──────────────────┬──────────────────────────┘
-                   │ Soroban SAC Transfer
+                   │ Soroban SAC transfer
                    ▼
 ┌─────────────────────────────────────────────┐
-│          STELLAR TESTNET                    │
-│  USDC · 5s finality · ~$0.00001 fees       │
+│             STELLAR TESTNET                 │
+│  USDC · 5s finality · ~$0.00001 fees        │
 └─────────────────────────────────────────────┘
-## 🔧 Ferramentas Disponíveis
 
-| Ferramenta | Descrição | Preço |
+## 🔧 Available Tools
+
+| Tool | Description | Price |
 |---|---|---|
-| **AI Q&A** | Responde perguntas usando IA | 0.01 USDC |
-| **Crypto Price** | Preços de criptomoedas em tempo real | 0.005 USDC |
-| **Web Summary** | Resumo inteligente de páginas web | 0.01 USDC |
+| **AI Q&A** | Answers general questions with AI | 0.01 USDC |
+| **Crypto Price** | Real-time crypto prices | 0.005 USDC |
+| **Web Summary** | Summarizes a web page | 0.01 USDC |
 
-## 💡 Como Funciona
+## 💡 How it works
 
-1. O agente de IA se conecta ao MCP Server e descobre as ferramentas disponíveis
-2. Quando o agente chama uma ferramenta, o servidor responde com **HTTP 402** (Payment Required) incluindo o preço em USDC
-3. O cliente MPP automaticamente constrói e assina uma transação Soroban SAC `transfer` na Stellar
-4. O servidor verifica o pagamento, faz broadcast na blockchain, e retorna o resultado
-5. Tudo acontece em segundos, sem API keys, sem assinaturas, sem setup manual
+1. Agent connects to the MCP server to discover available tools.
+2. When a tool is invoked, the server responds with **HTTP 402** (Payment Required) and the USDC price.
+3. The MPP client builds and signs a Soroban SAC `transfer` on Stellar.
+4. The server validates the payment, broadcasts it, and returns the tool result.
+5. All in seconds, without API keys or manual setup.
 
-## 🚀 Quick Start
+## 🗂️ Repo layout (backend + web)
 
-### Pré-requisitos
+- `server.js`, `mcp-server.js`, `client.js`: backend + MCP tooling (Node 20+)
+- `app/`: Next.js 16 frontend (App Router, Tailwind)
+- `npm run dev`: sobe o backend
+- `npm run web:dev`: sobe o frontend em `app/`
+- `npm run web:build` / `npm run web:start`: build/preview do frontend
+
+## 🚀 Quick start
+
+### Prerequisites
 
 - [Node.js](https://nodejs.org/) 20+
-- Uma carteira Stellar com USDC testnet ([criar aqui](https://lab.stellar.org/account/create))
+- A Stellar wallet with testnet USDC ([create here](https://lab.stellar.org/account/create))
 
-### 1. Clone e instale
+### 1. Clone and install
 
 ```bash
 git clone https://github.com/SEU_USUARIO/stellar-agent-tools.git
@@ -71,39 +78,39 @@ cd stellar-agent-tools
 npm install
 ```
 
-### 2. Configure o ambiente
+### 2. Configure environment
 
-Crie um arquivo `.env`:
+Create a `.env` file:
 
 ```env
-STELLAR_RECIPIENT=G...  # Sua chave pública Stellar
-STELLAR_SECRET=S...     # Sua chave secreta Stellar
-MPP_SECRET_KEY=sua-chave-secreta-mpp  # Qualquer string forte
+STELLAR_RECIPIENT=G...  # Your Stellar public key
+STELLAR_SECRET=S...     # Your Stellar secret key
+MPP_SECRET_KEY=your-strong-mpp-secret
 PORT=3001
 ```
 
-### 3. Configure a carteira Stellar Testnet
+### 3. Fund a Stellar testnet wallet
 
-1. Crie um keypair: https://lab.stellar.org/account/create
-2. Fund com XLM: https://lab.stellar.org/account/fund
-3. Adicione trustline USDC (botão na página de fund)
-4. Pegue USDC de teste: https://faucet.circle.com (selecione Stellar Testnet)
+1. Create a keypair: https://lab.stellar.org/account/create  
+2. Fund with XLM: https://lab.stellar.org/account/fund  
+3. Add USDC trustline (button on the fund page)  
+4. Get test USDC: https://faucet.circle.com (choose Stellar Testnet)
 
-### 4. Rode o servidor
+### 4. Run the server
 
 ```bash
 node server.js
 ```
 
-### 5. Teste com o cliente
+### 5. Try the sample client
 
 ```bash
 node client.js
 ```
 
-### 6. Use com Claude Desktop / Cursor (MCP)
+### 6. Use with Claude Desktop / Cursor (MCP)
 
-Adicione ao seu arquivo de configuração MCP:
+Add to your MCP config:
 
 ```json
 {
@@ -111,55 +118,53 @@ Adicione ao seu arquivo de configuração MCP:
     "stellar-agent-tools": {
       "command": "node",
       "args": ["mcp-server.js"],
-      "cwd": "/caminho/para/stellar-agent-tools"
+      "cwd": "/path/to/stellar-agent-tools"
     }
   }
 }
 ```
 
-## 🛠️ Stack Técnica
+## 🛠️ Tech stack
 
 - **Runtime**: Node.js 20+
 - **Server**: Express.js
-- **Pagamentos**: MPP (Machine Payments Protocol) via `@stellar/mpp`
+- **Payments**: MPP via `@stellar/mpp`
 - **Blockchain**: Stellar Testnet (Soroban SAC)
-- **Moeda**: USDC (testnet)
-- **Agent Protocol**: MCP (Model Context Protocol) via `@modelcontextprotocol/sdk`
-- **Framework MPP**: `mppx`
+- **Currency**: USDC (testnet)
+- **Agent protocol**: MCP via `@modelcontextprotocol/sdk`
+- **MPP framework**: `mppx`
 
-## 📊 Diferencial
+## 📊 Cost comparison
 
-| Feature | MCPay | Frames.ag | StellarAgentTools |
-|---|---|---|---|
-| Blockchain | EVM (Base, etc) | Solana | **Stellar** |
-| Protocolo de pagamento | x402 | x402 | **MPP** |
-| Tempo de transação | ~2-15s | ~0.4s | **~5s** |
-| Taxas | ~$0.001 | ~$0.0005 | **~$0.00001** |
-| MCP Server integrado | ❌ | ❌ | **✅** |
-| Modo Session (off-chain) | ❌ | ❌ | **Roadmap** |
+| Property | MCPay (EVM) | Stellar MPP (this project) |
+|---|---|---|
+| Chain | EVM (Base, etc.) | Stellar |
+| Payment protocol | x402 | MPP |
+| Finality | ~2–15s | ~5s |
+| Typical fees | ~$0.001 | **~$0.00001** |
 
 ## 🗺️ Roadmap
 
-- [x] Servidor MPP com ferramentas pagas
-- [x] Cliente de teste com pagamento automático
-- [x] MCP Server para integração com agentes
-- [ ] Dashboard web com histórico de transações
-- [ ] Modo MPP Session (canal de pagamento off-chain)
-- [ ] Ferramentas com IA real (OpenAI, Claude API)
-- [ ] Registry público de ferramentas
-- [ ] Sistema de reputação on-chain via Soroban
+- [x] MPP server with paid tools
+- [x] Test client with automatic payment
+- [x] MCP server for agent integration
+- [ ] Web dashboard with transaction history
+- [ ] MPP Session mode (off-chain channel)
+- [ ] Tools with real AI backends (OpenAI, Claude API)
+- [ ] Public tool registry
+- [ ] On-chain reputation via Soroban
 
-## 📜 Licença
+## 📜 License
 
 MIT
 
 ## 🏆 Hackathon
 
-Projeto construído para o [Stellar Hacks: Agents 2026](https://dorahacks.io/hackathon/stellar-agents-x402-stripe-mpp) pela Stellar Development Foundation.
+Built for [Stellar Hacks: Agents 2026](https://dorahacks.io/hackathon/stellar-agents-x402-stripe-mpp) by the Stellar Development Foundation.
 
-**Tecnologias do hackathon utilizadas:**
+**Hackathon tech used:**
 - ✅ Stellar Testnet
 - ✅ MPP (Machine Payments Protocol)
 - ✅ USDC via Soroban SAC
 - ✅ MCP (Model Context Protocol)
-- ✅ Agentes de IA autônomos
+- ✅ Autonomous AI agents

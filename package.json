@@ -1,10 +1,20 @@
 {
   "name": "stellar-agent-tools",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
+  "description": "Backend do marketplace MPP + workspaces (frontend em ./app)",
+  "main": "server.js",
+  "workspaces": [
+    "app"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "node server.js",
+    "start": "node server.js",
+    "mcp": "node mcp-server.js",
+    "client": "node client.js",
+    "web:dev": "npm run dev --workspace app",
+    "web:build": "npm run build --workspace app",
+    "web:start": "npm run start --workspace app"
   },
   "keywords": [],
   "author": "",
