@@ -78,7 +78,7 @@ STELLAR_RECIPIENT=G...      # Receiver wallet (Merchant)
 STELLAR_SECRET=S...         # Agent wallet secret (Payer)
 MPP_SECRET_KEY=strong-mpp-secret-abc
 GOOGLE_AI_KEY=AIza...       # Google Gemini API Key
-PORT=3001
+PORT=3000
 SERVER_URL=http://localhost:3000
 ```
 
@@ -99,6 +99,7 @@ To pay for the tools, your wrapper needs **USDC**. Head to [https://faucet.circl
 
 > [!IMPORTANT]
 > The API server must be running to process requests and enforce 402 payments.
+> **Note:** Make sure it runs on **Port 3000** (as set in `.env` default configs) otherwise the UI and clients won't reach the API endpoints correctly.
 
 ```bash
 node server.js
