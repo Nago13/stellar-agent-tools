@@ -350,7 +350,7 @@ export function CinematicFooter() {
                 type="button"
                 onClick={() =>
                   copyStepLink(
-                    "Read http://localhost:3000/skill.md and follow the instructions.",
+                    "Read https://lumina-stellar.vercel.app/skill.md and follow the instructions.",
                     "Step 1"
                   )
                 }
@@ -373,7 +373,7 @@ export function CinematicFooter() {
                   <p className="text-muted-foreground text-sm leading-relaxed font-mono">
                     Copy{" "}
                     <span className="text-foreground/70 bg-white/5 px-1.5 py-0.5 rounded-md border border-white/10 text-xs">
-                      Read http://localhost:3000/skill.md
+                      Read https://lumina-stellar.vercel.app/skill.md
                     </span>{" "}
                     for agents. Click to copy (toast confirms).
                   </p>
@@ -386,7 +386,7 @@ export function CinematicFooter() {
                 type="button"
                 onClick={() =>
                   copyStepLink(
-                    "Read http://localhost:3000/skill.md and return a list of the available tools.",
+                    "Read https://lumina-stellar.vercel.app/skill.md and return a list of the available tools.",
                     "Step 2"
                   )
                 }
@@ -409,7 +409,7 @@ export function CinematicFooter() {
                   <p className="text-muted-foreground text-sm leading-relaxed font-mono">
                     Copy{" "}
                     <span className="text-foreground/70 bg-white/5 px-1.5 py-0.5 rounded-md border border-white/10 text-xs">
-                      Read http://localhost:3000/skill.md and return a list of the available tools.
+                      Read https://lumina-stellar.vercel.app/skill.md and return a list of the available tools.
                     </span>{" "}
                     to list tools without leaving the page.
                   </p>
