@@ -136,6 +136,13 @@ Run the client test script to sequentially run through all 8 paid tools and watc
 node client.js
 ```
 
+#### D) Web Auto-Agents (from landing page)
+You can directly command your agent using the prompts provided at the [lumina-stellar.vercel.app](https://lumina-stellar.vercel.app) landing page:
+
+1. **Step 1:** Run `Read https://lumina-stellar.vercel.app/skill.md and follow the instructions.`
+2. **Step 2:** Run `Read https://lumina-stellar.vercel.app/skill.md and return a list of the available tools.`
+3. **Run a Tool:** Finally, choose any tool's prompt directly from the site (e.g., generate-image) and paste it into your agent to automatically pay and execute it.
+
 ---
 
 ## 🗂️ Repo layout (backend + web)
