@@ -6,9 +6,6 @@ export const dynamic = "force-static";
 export default async function SkillMdPage() {
   const skillPath = path.join(
     process.cwd(),
-    "..",
-    "skills",
-    "stellar-agent-tools",
     "SKILL.md"
   );
   const skillContent = await fs.promises.readFile(skillPath, "utf-8");
