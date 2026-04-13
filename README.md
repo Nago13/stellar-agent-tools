@@ -16,52 +16,43 @@ StellarAgentTools is an open-source infrastructure that lets AI agents (Claude D
 - Official machine-to-machine payments with MPP
 
 ## 🏗️ Architecture
-┌─────────────────────────────────────────────┐
-│           AI AGENTS (Clients)               │
-│  Claude Desktop · Cursor · Claude Code      │
-└──────────────────┬──────────────────────────┘
-                   │ MCP Protocol
-                   ▼
-┌─────────────────────────────────────────────┐
-│          MCP SERVER (Discovery)             │
-│  Lists tools · Prices · Descriptions        │
-└──────────────────┬──────────────────────────┘
-                   │ HTTP + MPP
-                   ▼
-┌─────────────────────────────────────────────┐
-│        PAYMENT LAYER (MPP Charge)           │
-│  HTTP 402 → USDC payment → Retry → 200      │
-└──────────────────┬──────────────────────────┘
-                   │ Soroban SAC transfer
-                   ▼
-┌─────────────────────────────────────────────┐
-│             STELLAR TESTNET                 │
-│  USDC · 5s finality · ~$0.00001 fees        │
-└─────────────────────────────────────────────┘
+
+```mermaid
+graph LR
+    A["AI AGENTS (Clients)<br/>Claude Desktop · Cursor · CLI"] -->|"MCP protocol<br/>or CLI wrapper"| B["mcp-server.js / paid-call.js<br/>(Discovery + Payer Wallet)"]
+    B -->|"fetch() with MPP<br/>auto-pay 402→sign→retry"| C["server.js<br/>(Express API + MPP charges)"]
+    C -->|"External APIs"| D["CoinGecko / Wikipedia<br/>Open-Meteo / JokeAPI / Gemini"]
+    
+    style B fill:#0D61F2,color:#fff
+    style C fill:#1a1a2e,color:#fff
+```
 
 ## 🔧 Available Tools
 
-| Tool | Description | Price |
-|---|---|---|
-| **AI Q&A** | Answers general questions with AI | 0.01 USDC |
-| **Crypto Price** | Real-time crypto prices | 0.005 USDC |
-| **Web Summary** | Summarizes a web page | 0.01 USDC |
+All tools are priced in USDC on the Stellar Testnet. Prices are enforced by the API server using the Machine Payments Protocol.
+
+| Endpoint | Description | Price | Source API |
+|----------|-------------|-------|------------|
+| `GET /tools/crypto-price` | Real-time crypto prices (`symbol`) | **0.005 USDC** | CoinGecko |
+| `GET /tools/wiki-summary` | Wikipedia article summaries (`topic`, `lang`) | **0.01 USDC** | Wikipedia REST API |
+| `GET /tools/country-info` | Comprehensive country data (`name`) | **0.005 USDC** | RestCountries |
+| `GET /tools/random-joke` | Random jokes in various languages (`lang`) | **0.001 USDC** | JokeAPI v2 |
+| `GET /tools/dad-joke` | Dad jokes, optionally by topic (`search`) | **0.001 USDC** | icanhazdadjoke |
+| `GET /tools/weather` | Real-time weather (`city`, `lat`, `lon`) | **0.005 USDC** | Open-Meteo |
+| `GET /tools/exchange-rate` | Real-time fiat exchange rates (`from`, `to`) | **0.003 USDC** | ExchangeRate API |
+| `GET /tools/generate-image`| AI Image generation (`prompt`) | **0.05 USDC** | Google Gemini (Nano Banana) |
+| `GET /tools` | Lists all available tools | **FREE** | Internal |
 
 ## 💡 How it works
 
 1. Agent connects to the MCP server to discover available tools.
-2. When a tool is invoked, the server responds with **HTTP 402** (Payment Required) and the USDC price.
-3. The MPP client builds and signs a Soroban SAC `transfer` on Stellar.
-4. The server validates the payment, broadcasts it, and returns the tool result.
-5. All in seconds, without API keys or manual setup.
+2. When a tool is invoked, the HTTP API server responds with **HTTP 402** (Payment Required) and the USDC price.
+3. The MPP client wrapper (`Mppx` polyfill) intercepts the 402, builds, and signs a Soroban SAC `transfer` on Stellar using the agent's wallet in `.env`.
+4. The client retries the request with the signed credential.
+5. The server validates the payment on the blockchain and returns the tool result (HTTP 200).
+6. All in seconds, autonomously, without API keys.
 
-## 🗂️ Repo layout (backend + web)
-
-- `server.js`, `mcp-server.js`, `client.js`: backend + MCP tooling (Node 20+)
-- `app/`: Next.js 16 frontend (App Router, Tailwind)
-- `npm run dev`: sobe o backend
-- `npm run web:dev`: sobe o frontend em `app/`
-- `npm run web:build` / `npm run web:start`: build/preview do frontend
+---
 
 ## 🚀 Quick start
 
@@ -80,37 +71,43 @@ npm install
 
 ### 2. Configure environment
 
-Create a `.env` file:
+Create a `.env` file in the root:
 
 ```env
-STELLAR_RECIPIENT=G...  # Your Stellar public key
-STELLAR_SECRET=S...     # Your Stellar secret key
-MPP_SECRET_KEY=your-strong-mpp-secret
+STELLAR_RECIPIENT=G...      # Receiver wallet (Merchant)
+STELLAR_SECRET=S...         # Agent wallet secret (Payer)
+MPP_SECRET_KEY=strong-mpp-secret-abc
+GOOGLE_AI_KEY=AIza...       # Google Gemini API Key
 PORT=3001
+SERVER_URL=http://localhost:3001
 ```
 
-### 3. Fund a Stellar testnet wallet
+### 3. Fund your agent wallet
 
-1. Create a keypair: https://lab.stellar.org/account/create  
-2. Fund with XLM: https://lab.stellar.org/account/fund  
-3. Add USDC trustline (button on the fund page)  
-4. Get test USDC: https://faucet.circle.com (choose Stellar Testnet)
+A set of helper scripts are provided:
 
-### 4. Run the server
+```bash
+# Generate a new Payer wallet (S...) and fund with XLM for transaction fees
+node skills/stellar-agent-tools/scripts/create-wallet.js --friendbot
+
+# Check your agent wallet balance
+node skills/stellar-agent-tools/scripts/check-balance.js
+```
+To pay for the tools, your wrapper needs **USDC**. Head to [https://faucet.circle.com](https://faucet.circle.com), choose **Stellar Testnet**, and transfer some USDC to your agent's public key (G...).
+
+### 4. Run the API Server
+
+> [!IMPORTANT]
+> The API server must be running to process requests and enforce 402 payments.
 
 ```bash
 node server.js
 ```
 
-### 5. Try the sample client
+### 5. Autonomous Agent Integrations
 
-```bash
-node client.js
-```
-
-### 6. Use with Claude Desktop / Cursor (MCP)
-
-Add to your MCP config:
+#### A) GUI Agents (Claude Desktop, Cursor)
+Integrate the tools seamlessly via **MCP (Model Context Protocol)**. Add this to your MCP configuration file:
 
 ```json
 {
@@ -123,6 +120,32 @@ Add to your MCP config:
   }
 }
 ```
+
+#### B) CLI Agents (Codex, Custom Agents)
+CLI agents can read the `skills/stellar-agent-tools/SKILL.md` file for instructions. They use the provided wrapper script to autonomously execute the 402 flow:
+
+```bash
+node skills/stellar-agent-tools/scripts/paid-call.js /tools/crypto-price symbol=xlm
+```
+
+#### C) Headless Testing
+Run the client test script to sequentially run through all 8 paid tools and watch the autonomous payment flow in action:
+
+```bash
+node client.js
+```
+
+---
+
+## 🗂️ Repo layout (backend + web)
+
+- `server.js` — The Express API server charging MPP for tools
+- `client.js` — A headless tester for the full MPP flow
+- `mcp-server.js` — The MCP wrapper server for UI-based agents
+- `skills/` — The autonomous CLI agent script wrappers and SKILL.md definition
+- `app/` — Optional Next.js 16 frontend (App Router, Tailwind)
+  - `npm run web:dev` to run frontend
+  - `npm run web:build` / `npm run web:start` to build/preview
 
 ## 🛠️ Tech stack
 
@@ -148,9 +171,9 @@ Add to your MCP config:
 - [x] MPP server with paid tools
 - [x] Test client with automatic payment
 - [x] MCP server for agent integration
+- [x] Autonomy wrapper for CLI agents (Codex, etc.)
 - [ ] Web dashboard with transaction history
 - [ ] MPP Session mode (off-chain channel)
-- [ ] Tools with real AI backends (OpenAI, Claude API)
 - [ ] Public tool registry
 - [ ] On-chain reputation via Soroban
 
