@@ -1,11 +1,14 @@
 import express from "express";
-import { GoogleGenAI } from "@google/genai";
 import { Mppx } from "mppx/server";
 import { stellar } from "@stellar/mpp/charge/server";
 import { USDC_SAC_TESTNET } from "@stellar/mpp";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
+import { createRequire } from "module";
 import dotenv from "dotenv";
+
+const require = createRequire(import.meta.url);
+const { GoogleGenAI } = require("@google/genai");
 
 dotenv.config();
 

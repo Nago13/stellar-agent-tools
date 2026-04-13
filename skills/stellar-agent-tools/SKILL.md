@@ -1,69 +1,83 @@
 ---
 name: stellar-mpp-agent
-description: Unified skill to create/fund Stellar testnet wallets and run the paid MCP tool server with MPP (USDC). Use to bootstrap an agent wallet, pay tools, and expose them to MCP apps.
+description: >
+  Skill to call paid tool endpoints on Stellar testnet via MPP.
+  The agent wallet is in .env (STELLAR_SECRET). Use the paid-call.js script to call any tool.
 ---
 
-# Stellar MPP Agent (Wallet + Tools)
+# Stellar MPP Agent — Paid Tools
 
-## When to use
-- You need an agent wallet on Stellar testnet USDC (XLM fees via friendbot) to pay MPP-priced tools.
-- You want to run the paid tool server and MCP wrapper so agents (Claude Desktop/Cursor) can discover and pay automatically.
-- You want to log charge events and operate headlessly.
+## How to call tools
+
+Run this command — it handles wallet signing and payment automatically:
+
+```bash
+node skills/stellar-agent-tools/scripts/paid-call.js <endpoint> [key=value ...]
+```
+
+### Examples (copy and run directly):
+
+```bash
+# Crypto price — 0.005 USDC
+node skills/stellar-agent-tools/scripts/paid-call.js /tools/crypto-price symbol=xlm
+
+# Wikipedia summary — 0.01 USDC
+node skills/stellar-agent-tools/scripts/paid-call.js /tools/wiki-summary topic=Bitcoin lang=en
+
+# Country info — 0.005 USDC
+node skills/stellar-agent-tools/scripts/paid-call.js /tools/country-info name=Brazil
+
+# Random joke — 0.001 USDC
+node skills/stellar-agent-tools/scripts/paid-call.js /tools/random-joke lang=en
+
+# Dad joke — 0.001 USDC
+node skills/stellar-agent-tools/scripts/paid-call.js /tools/dad-joke
+
+# Weather — 0.005 USDC
+node skills/stellar-agent-tools/scripts/paid-call.js /tools/weather city=Tokyo lat=35.68 lon=139.69
+
+# Exchange rate — 0.003 USDC
+node skills/stellar-agent-tools/scripts/paid-call.js /tools/exchange-rate from=USD to=BRL
+
+# Generate image — 0.05 USDC
+node skills/stellar-agent-tools/scripts/paid-call.js /tools/generate-image prompt=A+futuristic+city
+
+# List all tools — FREE
+node skills/stellar-agent-tools/scripts/paid-call.js /tools
+```
+
+**DO NOT use curl or wget** — they cannot handle MPP payment signing. Always use paid-call.js.
+
+## Available tools
+
+| Endpoint | Params | Price |
+|----------|--------|-------|
+| `/tools/crypto-price` | `symbol=xlm\|btc\|eth\|sol` | 0.005 USDC |
+| `/tools/wiki-summary` | `topic=... lang=en\|pt\|es` | 0.01 USDC |
+| `/tools/country-info` | `name=Brazil` | 0.005 USDC |
+| `/tools/random-joke` | `lang=en\|pt\|es` | 0.001 USDC |
+| `/tools/dad-joke` | `search=optional` | 0.001 USDC |
+| `/tools/weather` | `city=... lat=... lon=...` | 0.005 USDC |
+| `/tools/exchange-rate` | `from=USD to=BRL` | 0.003 USDC |
+| `/tools/generate-image` | `prompt=...` | 0.05 USDC |
+| `/tools` | *(none)* | FREE |
 
 ## Prerequisites
-- Node.js 20+
-- Stellar testnet wallet (generate below) and USDC testnet (Circle faucet) + XLM for fees (friendbot).
 
-## Setup
-1) Install deps: `npm install`
-2) Create `.env` in repo root (receiver + payer):
-```
-STELLAR_RECIPIENT=G...    # receiver for tool payments
-STELLAR_SECRET=S...       # agent wallet secret (payer)
-MPP_SECRET_KEY=strong-mpp-secret
-PORT=3001                 # optional
-SERVER_URL=http://localhost:3001
-```
-3) Generate wallet + fund XLM (choose one):
-- New wallet + friendbot: `node skills/stellar-agent-tools/scripts/create-wallet.js --friendbot`
-- Fund existing S... with friendbot: `node skills/stellar-agent-tools/scripts/fund-friendbot.js S...`
-4) Check balances (needs Horizon): `node skills/stellar-agent-tools/scripts/check-balance.js S...`
-4) Fund USDC: https://faucet.circle.com (Stellar Testnet) or transfer from another account.
+- `node server.js` must be running (port 3001)
+- `.env` must have `STELLAR_SECRET` (agent wallet) with XLM + USDC balances
 
-## Run services
-- Paid API with MPP charges: `node server.js`
-- MCP discovery wrapper (for agents): `node mcp-server.js`
-- Headless autopay test (payer): `node client.js`
-  - Uses `STELLAR_SECRET` to sign/pay challenges automatically
-  - Logs: challenge headers → signed tx → receipt
+## Wallet scripts
 
-## MCP config (Claude Desktop/Cursor)
-```json
-{
-  "mcpServers": {
-    "stellar-agent-tools": {
-      "command": "node",
-      "args": ["mcp-server.js"],
-      "cwd": "/path/to/stellar-agent-tools"
-    }
-  }
-}
+```bash
+# Create new wallet + fund XLM
+node skills/stellar-agent-tools/scripts/create-wallet.js --friendbot
+
+# Fund existing wallet with XLM
+node skills/stellar-agent-tools/scripts/fund-friendbot.js
+
+# Check balance
+node skills/stellar-agent-tools/scripts/check-balance.js
 ```
 
-## Tool endpoints (MPP)
-- Image (Nano Banana / Gemini): `GET http://localhost:3001/tools/generate-image` — 0.05 USDC
-- Crypto Price: `GET http://localhost:3001/tools/crypto-price` — 0.005 USDC
-- Web Summary: `GET http://localhost:3001/tools/wiki-summary` — 0.01 USDC
-- (See `/tools` for the full list and prices.)
-
-Use x402/fetch-style flow with the agent wallet to pay via MPP; responses include receipts when paid.
-
-## Payer vs Receiver (make sure both are set)
-- `STELLAR_SECRET`: wallet that PAYS (needs XLM for fees + USDC for tools).
-- `STELLAR_RECIPIENT`: wallet that RECEIVES payments (set to the merchant).
-- Test payer flow headlessly: `node client.js` and watch the charge → sign → submit → receipt.
-
-## Troubleshooting
-- Ensure wallet has XLM (fees) + USDC (tool payment).
-- Make sure `MPP_SECRET_KEY` matches server/client.
-- Update prices or add tools in `server.js`, then restart.
+Fund USDC testnet at https://faucet.circle.com (Stellar Testnet).
